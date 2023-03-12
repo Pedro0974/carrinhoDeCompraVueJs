@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrinho de Compras VueJs</title>
+    <link rel="stylesheet" href="/src/css/styles.css">
+</head>
+<body>
+
+
+    <div id="app">
+        <h1 class=" flex text-3xl font-sans mb-8 justify-center">Carrinho de Compra</h1>
+        <!--Card produto-->
+        
+        <carrinho 
+            @remover="removerProduto"
+            :produtos="produtos"
+        ></carrinho>
+        
+        
+    
+    </div>
+
+
+    <template id="carrinhoCompra">
+
+        <div class="flex flex-col w-min mx-auto border border-xl border-gray-300 shadow-lg shadow-black">
+
+            <div
+                v-for="produto in produtos"
+                :key="produtos.id">
+
+                <produtos :produto="produto" @remover="removerProduto"></produtos>
+            </div>
+            
+            <div class="flex justify-between m-2">
+                <a href="#" class="text-blue-500 underline hover:text-blue-700">Continuar comprando</a>
+                <h4 class="font-bold">Total: R$ {{totalCompra}}</h4>
+            </div>
+        </div>
+
+    </template>
+
+    <template id="produtos-card">
+        <div class="border border-b border-gray-300">
+            <div class="flex flex-col justify-items-center m-3">
+
+                <div class="flex place-self-center">
+                    <div class="m-3">
+                        <img src="https://via.placeholder.com/72" class="rounded-full">
+                    </div>
+
+                    <div class="ml-3 mt-4">
+                        <h4 class="mb-0 font-bold text-xl">{{ produto.name }}</h4>
+                        <span>#{{produto.id}}</span>
+                    </div>
+                    <div class="w-40">
+
+                    </div>
+                    <div class="my-auto border border-xl border-gray-400 rounded ">
+                        <button 
+                        class="w-8 h-8 bg-gray-100 border border-xl border-gray-400 rounded font-bold hover:bg-gray-400 hover:text-white"
+                        @click="remove()"
+                        :disabled="produto.qtd <=1"
+                        >-</button>
+                    </div>
+                    <div class="my-auto ">
+                        <input type="text" class="w-10 text-center appearance-none border border-t-2 border-b-2 border-gray-300 " readonly :value="produto.qtd">
+                    </div>
+                    <div class="my-auto border border-xl border-gray-400 rounded ">
+                        <button 
+                        class="w-8 h-8 bg-gray-100 border border-xl border-gray-400 rounded font-bold hover:bg-gray-400 hover:text-white"
+                        @click="add()"
+                        >+</button>
+                    </div>
+                    <div class="my-auto font-bold text-lg ml-4">R${{ total }}</div>
+                    <div class="my-auto border border-xl border-red-400 rounded ml-4">
+                        <button 
+                        @click="removerProduto()"
+                        class="w-8 h-8 border border-xl border-red-400 rounded font-bold text-red-600 hover:bg-red-400 hover:text-white"
+                        >X</button>
+                    </div>
+                    
+                    
+                </div>
+
+            </div>
+        </div>
+    </template>
+    
+
+
+
+    <script src="https://unpkg.com/vue@next"></script>
+
+    <script>
+        const app = Vue.createApp({
+
+            data(){
+                return  {
+                    produtos: [
+                        { id: 1, name: 'Produto A', amount: 10.50, qtd: 1},
+                        { id: 2, name: 'Produto B', amount: 19.50, qtd: 1},
+                        { id: 3, name: 'Produto C', amount: 20.00, qtd: 1},
+                    ],
+
+                };
+            },
+            methods: {
+                removerProduto(produto){
+                    const idx = this.produtos.findIndex(o => o.id === produto.id)
+                    if(idx >= 0){
+                        this.produtos.splice(idx, 1);
+                    }
+                },
+            },
+                
+        })
+        .component('carrinho', {
+            template: '#carrinhoCompra',
+            props: {
+                produtos: {
+                    type: Array,
+                    default: () => [],
+                },
+            },
+            computed: {
+                totalCompra() {
+                    return this.produtos.reduce((total, item) => {
+                        total+= item.qtd * item.amount;
+                        return total;
+                    },0);
+                },
+                
+            },
+            methods:{
+                removerProduto(produto){
+                    this.$emit('remover', produto);
+                },
+            }
+        })
+        
+        .component('produtos', {
+            template: '#produtos-card',
+            props:{
+                produto: {
+                    type: Object,
+                    default: () => ({}),
+                },
+            },
+            data (){
+                return{
+                };
+            },
+
+            computed:{
+                total() {
+                    return this.produto.amount * this.produto.qtd;
+                },
+            },
+
+            methods:{
+                add() {
+                    this.produto.qtd++;
+                },
+                remove() {
+                    if(this.produto.qtd<=1){
+                        return;
+                    }
+                    this.produto.qtd--;
+                },
+                removerProduto(){
+                    this.$emit('remover', this.produto);
+                },
+            },
+        })
+        
+        .mount('#app');
+    </script>
+
+    
+</body>
+</html>
